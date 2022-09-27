@@ -1,0 +1,43 @@
+env:
+    ASSIGNMENT: assignment10
+on: push
+jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch environment file
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE311_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE311/${ASSIGNMENT}/contents/environment.yml"
+      - name: Fetch Tests 
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE311_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE311/${ASSIGNMENT}/contents/test.py"
+      - name: Fetch data
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE311_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE311/${ASSIGNMENT}/contents/{33013014020000,33105029270000}.csv"
+      - name: Fetch gold files
+        shell: bash -l {0}
+        run: |
+          cd images;
+          curl \
+          --header 'Authorization: token ${{secrets.PGE311_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE311/${ASSIGNMENT}/contents/images/{33013014020000,33105029270000}_gold.png"
+      - uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: environment.yml
+      - name: Run Tests 
+        shell: bash -l {0}
+        run: python -m unittest test.py -vvv
